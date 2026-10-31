@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Input Kontak WhatsApp</title>
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Dukungan Khusus iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kontak WA">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Registrasi Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker terdaftar:', reg.scope))
+                    .catch(err => console.error('Registrasi Service Worker gagal:', err));
+            });
+        }
+    </script>
+</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Input Kontak WhatsApp</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            height: 100dvh; /* Dynamic viewport height agar pas di HP tanpa terpotong toolbar */
+            overflow: hidden; /* Mencegah layar goyang / bouncing di mobile */
+            background-color: #f8fafc;
+        }
+
+        /* Container full screen dengan proteksi notch HP */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-top: max(20px, env(safe-area-inset-top));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            padding-left: max(20px, env(safe-area-inset-left));
+            padding-right: max(20px, env(safe-area-inset-right));
+        }
+
+        /* Header atas */
+        .app-header {
+            text-align: center;
+            padding: 10px 0 20px;
+        }
+
+        .app-header h2 {
+            font-size: 22px;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .app-header p {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* Konten tengah / form */
+        .form-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        input {
+            width: 100%;
+            height: 52px; /* Ukuran sentuh nyaman untuk jempol */
+            padding: 0 16px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 16px; /* 16px mencegah browser iOS auto-zoom saat fokus */
+            color: #0f172a;
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .feedback {
+            font-size: 13px;
+            margin-top: 6px;
+            min-height: 18px;
+            font-weight: 500;
+        }
+
+        /* Bagian bawah tombol */
+        .footer-action {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            height: 54px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit:disabled {
+            background: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 20px;
+        }
+
+        .status-success { color: #16a34a; }
+        .status-error { color: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appRoot">
+        <header class="app-header">
+            <h2>Data Kontak</h2>
+            <p>Formulir Input Langsung ke Google Sheets</p>
+        </header>
+
+        <form id="contactForm" class="form-body">
+            <div class="form-group">
+                <label for="nama">Nama Lengkap</label>
+                <input type="text" id="nama" placeholder="Ketik nama lengkap..." required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="wa">Nomor WhatsApp</label>
+                <input type="tel" id="wa" inputmode="numeric" placeholder="Contoh: 08123456789" required autocomplete="off">
+                <div id="waFeedback" class="feedback"></div>
+            </div>
+
+            <div id="status" class="status-msg"></div>
+        </form>
+
+        <div class="footer-action">
+            <button type="submit" form="contactForm" id="btnSubmit" class="btn-submit">Simpan Kontak</button>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "TEMPEL_URL_WEB_APP_ANDA_DI_SINI";
+
+        const form = document.getElementById("contactForm");
+        const btn = document.getElementById("btnSubmit");
+        const status = document.getElementById("status");
+        const waInput = document.getElementById("wa");
+        const waFeedback = document.getElementById("waFeedback");
+
+        let debounceTimer;
+
+        // Validasi dan standarisasi nomor
+        function formatWA(raw) {
+            let num = raw.replace(/\D/g, '');
+            if (num.startsWith('08')) {
+                num = '62' + num.substring(1);
+            }
+            return num;
+        }
+
+        // Pengecekan realtime saat user mengetik
+        waInput.addEventListener("input", function() {
+            clearTimeout(debounceTimer);
+            waFeedback.textContent = "";
+
+            const cleaned = formatWA(waInput.value);
+
+            if (cleaned.length < 10) {
+                btn.disabled = false;
+                return;
+            }
+
+            waFeedback.style.color = "#64748b";
+            waFeedback.textContent = "Memeriksa status nomor...";
+
+            debounceTimer = setTimeout(() => {
+                fetch(`${SCRIPT_URL}?wa=${encodeURIComponent(cleaned)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.exists) {
+                            waFeedback.style.color = "#dc2626";
+                            waFeedback.textContent = `⚠ Sudah terdaftar atas nama: ${data.nama}`;
+                            btn.disabled = true;
+                        } else {
+                            waFeedback.style.color = "#16a34a";
+                            waFeedback.textContent = "✓ Nomor tersedia";
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(() => {
+                        waFeedback.textContent = "";
+                    });
+            }, 500);
+        });
+
+        // Submit form
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const finalWa = formatWA(waInput.value);
+            if (!/^628[0-9]{8,12}$/.test(finalWa)) {
+                status.className = "status-msg status-error";
+                status.textContent = "Format nomor WA tidak sesuai!";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+            status.textContent = "";
+
+            const payload = {
+                nama: document.getElementById("nama").value.trim(),
+                wa: finalWa
+            };
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === "success") {
+                    status.className = "status-msg status-success";
+                    status.textContent = "✓ Data berhasil disimpan!";
+                    form.reset();
+                    waFeedback.textContent = "";
+                } else {
+                    status.className = "status-msg status-error";
+                    status.textContent = "⚠ " + res.message;
+                }
+            })
+            .catch(() => {
+                status.className = "status-msg status-error";
+                status.textContent = "Koneksi terganggu. Silakan coba lagi.";
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = "Simpan Kontak";
+            });
+        });
+    </script>
+</body>
+</html>
