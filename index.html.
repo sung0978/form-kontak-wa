@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Input Kontak WhatsApp</title>
@@ -25,10 +25,7 @@
             });
         }
     </script>
-</head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Input Kontak WhatsApp</title>
+
     <style>
         * {
             box-sizing: border-box;
@@ -41,12 +38,11 @@
         html, body {
             width: 100%;
             height: 100%;
-            height: 100dvh; /* Dynamic viewport height agar pas di HP tanpa terpotong toolbar */
-            overflow: hidden; /* Mencegah layar goyang / bouncing di mobile */
+            height: 100dvh;
+            overflow: hidden;
             background-color: #f8fafc;
         }
 
-        /* Container full screen dengan proteksi notch HP */
         .app-container {
             width: 100%;
             height: 100%;
@@ -59,7 +55,6 @@
             padding-right: max(20px, env(safe-area-inset-right));
         }
 
-        /* Header atas */
         .app-header {
             text-align: center;
             padding: 10px 0 20px;
@@ -77,7 +72,6 @@
             margin-top: 4px;
         }
 
-        /* Konten tengah / form */
         .form-body {
             flex: 1;
             display: flex;
@@ -102,11 +96,11 @@
 
         input {
             width: 100%;
-            height: 52px; /* Ukuran sentuh nyaman untuk jempol */
+            height: 52px;
             padding: 0 16px;
             border: 1.5px solid #cbd5e1;
             border-radius: 12px;
-            font-size: 16px; /* 16px mencegah browser iOS auto-zoom saat fokus */
+            font-size: 16px;
             color: #0f172a;
             background: #ffffff;
             outline: none;
@@ -125,7 +119,6 @@
             font-weight: 500;
         }
 
-        /* Bagian bawah tombol */
         .footer-action {
             max-width: 480px;
             width: 100%;
@@ -199,6 +192,7 @@
     </div>
 
     <script>
+        // Masukkan URL deployment Google Apps Script Anda di sini
         const SCRIPT_URL = "TEMPEL_URL_WEB_APP_ANDA_DI_SINI";
 
         const form = document.getElementById("contactForm");
@@ -209,7 +203,6 @@
 
         let debounceTimer;
 
-        // Validasi dan standarisasi nomor
         function formatWA(raw) {
             let num = raw.replace(/\D/g, '');
             if (num.startsWith('08')) {
@@ -218,7 +211,6 @@
             return num;
         }
 
-        // Pengecekan realtime saat user mengetik
         waInput.addEventListener("input", function() {
             clearTimeout(debounceTimer);
             waFeedback.textContent = "";
@@ -253,7 +245,6 @@
             }, 500);
         });
 
-        // Submit form
         form.addEventListener("submit", function(e) {
             e.preventDefault();
 
